@@ -1,0 +1,33 @@
+    
+function getContactInfo() {
+  var searchText = 'お問い合わせ頂きありがとうございました。';
+  var start = 0;
+  var max = 100;
+  var threads = GmailApp.search(searchText, start, max);
+  var messages = GmailApp.getMessagesForThreads(threads);
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var lastRow = sheet.getLastRow(); 
+  var idArrays = sheet.getRange(`E2:E${lastRow}`).getValues();
+  var flattenArray = idArrays.flat(); 
+  //console.log(messages);
+  var arrays = [];
+  for(var i = 0;i < messages.length;i++) {
+    console.log(messages[i][0].getPlainBody())
+    var msgId = messages[i][0].getId();
+    console.log(msgId)
+    if(flattenArray.includes(msgId) == false){
+      var row = [
+        messages[i][0].getDate(),
+        messages[i][0].getPlainBody().split("会社名：")[1].split("\n")[0],
+        messages[i][0].getPlainBody().split("お名前：")[1].split("\n")[0],
+        messages[i][0].getPlainBody().split("メールアドレス：")[1].split("\n")[0],
+        messages[i][0].getId()
+      ]; 
+      console.log(row);
+      arrays.push(row);    
+    }
+  }
+  if(arrays.length > 0){
+    SpreadsheetApp.getActiveSheet().getRange(`A${lastRow + 1}:E${lastRow + arrays.length}`).setValues(arrays);
+  }
+}
